@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 public final class DefaultGitHubNotificationStrategy extends AbstractGitHubNotificationStrategy {
 
   private static final Logger LOGGER =
-          Logger.getLogger(DefaultGitHubNotificationStrategy.class.getName());
+      Logger.getLogger(DefaultGitHubNotificationStrategy.class.getName());
 
   private void logHosts() {
     String primaryHost = System.getenv("PRIMARY_HOSTNAME");
