@@ -24,6 +24,9 @@
 
 package org.jenkinsci.plugins.github_branch_source;
 
+import hudson.model.Cause;
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.util.Collections;
 import java.util.List;
@@ -39,19 +42,36 @@ public final class DefaultGitHubNotificationStrategy extends AbstractGitHubNotif
   private static final Logger LOGGER =
       Logger.getLogger(DefaultGitHubNotificationStrategy.class.getName());
 
-  private void logHosts() {
+  private void logHosts(GitHubNotificationContext notificationContext) {
     String primaryHost = System.getenv("PRIMARY_HOSTNAME");
     String host = System.getenv("HOSTNAME");
     if (primaryHost != null) {
-      LOGGER.info("Primary host is " + primaryHost);
+      LOGGER.info("[LOG HOSTS] Primary host is " + primaryHost);
     } else {
-      LOGGER.info("Primary host not set");
+      LOGGER.info("[LOG HOSTS] Primary host not set");
     }
 
     if (host != null) {
-      LOGGER.info("This host is " + host);
+      LOGGER.info("[LOG HOSTS] This host is " + host);
     } else {
-      LOGGER.info("This host is not set");
+      LOGGER.info("[LOG HOSTS] This host is not set");
+    }
+    Job<?, ?> job = notificationContext.getJob();
+    if (job != null) {
+      LOGGER.info("[LOG HOSTS] The job is " + job.getName());
+    } else {
+      LOGGER.info("[LOG HOSTS] job is not set");
+    }
+    Run<?, ?> build = notificationContext.getBuild();
+    if (build != null) {
+      List<Cause> causes = build.getCauses();
+      if (causes != null) {
+        for (Cause cause : causes) {
+          LOGGER.info("[LOG HOSTS] Build cause: " + cause.getShortDescription());
+        }
+      }
+    } else {
+      LOGGER.info("[LOG HOSTS] No build");
     }
   }
 
@@ -59,7 +79,7 @@ public final class DefaultGitHubNotificationStrategy extends AbstractGitHubNotif
   public List<GitHubNotificationRequest> notifications(
       GitHubNotificationContext notificationContext, TaskListener listener) {
     // For now we are just going to log the primary/current ENVs and build cause.
-    this.logHosts();
+    this.logHosts(notificationContext);
 
     return Collections.singletonList(
         GitHubNotificationRequest.build(
