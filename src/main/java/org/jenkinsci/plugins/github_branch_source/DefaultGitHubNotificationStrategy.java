@@ -28,6 +28,7 @@ import hudson.model.TaskListener;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Default implementation of {@link AbstractGitHubNotificationStrategy}
@@ -35,10 +36,30 @@ import java.util.List;
  */
 public final class DefaultGitHubNotificationStrategy extends AbstractGitHubNotificationStrategy {
 
+    private static final Logger LOGGER =
+        Logger.getLogger(DefaultGitHubNotificationStrategy.class.getName());
+
+    private void logHosts() {
+        String primaryHost = System.getenv("PRIMARY_HOSTNAME");
+        String host = System.getenv("HOSTNAME");
+        if (primaryHost != null) {
+            LOGGER.info("Primary host is " + primaryHost);
+        } else {
+            LOGGER.info("Primary host not set");
+        }
+
+        if (host != null) {
+            LOGGER.info("This host is " + host);
+        } else {
+            LOGGER.info("This host is not set");
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     public List<GitHubNotificationRequest> notifications(GitHubNotificationContext notificationContext, TaskListener listener) {
+        this.logHosts();
         return Collections.singletonList(GitHubNotificationRequest.build(notificationContext.getDefaultContext(listener),
                 notificationContext.getDefaultUrl(listener),
                 notificationContext.getDefaultMessage(listener),
