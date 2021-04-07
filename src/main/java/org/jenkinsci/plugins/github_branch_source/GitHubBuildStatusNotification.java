@@ -109,6 +109,19 @@ public class GitHubBuildStatusNotification {
                             }
                         }
                         if (result != null) {
+                            String primaryHost = System.getenv("PRIMARY_HOSTNAME");
+                            String host = System.getenv("HOSTNAME");
+                            if (primaryHost != null) {
+                                listener.getLogger().println("Primary host is " + primaryHost);
+                            } else {
+                                listener.getLogger().println("Primary host not set");
+                            }
+
+                            if (host != null) {
+                                listener.getLogger().println("This host is " + host);
+                            } else {
+                                listener.getLogger().println("This host is not set");
+                            }
                             listener.getLogger().format("%n" + Messages.GitHubBuildStatusNotification_CommitStatusSet() + "%n%n");
                         }
                     }
@@ -119,6 +132,7 @@ public class GitHubBuildStatusNotification {
                 listener.getLogger().format("%n"
                         + "Could not update commit status. Message: %s%n"
                         + "%n", ioe.getMessage());
+
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.log(Level.FINE, "Could not update commit status of run " + build.getFullDisplayName(), ioe);
                 }
