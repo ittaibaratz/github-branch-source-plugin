@@ -42,6 +42,9 @@ import hudson.scm.SCMRevisionState;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,20 +112,29 @@ public class GitHubBuildStatusNotification {
                             }
                         }
                         if (result != null) {
-                            String primaryHost = System.getenv("PRIMARY_HOSTNAME");
-                            String host = System.getenv("HOSTNAME");
-                            if (primaryHost != null) {
-                                listener.getLogger().println("Primary host is " + primaryHost);
+                            PrintStream logger = listener.getLogger();
+                            String jenkinsUrl = System.getenv("JENKINS_URL");
+                            if (jenkinsUrl != null) {
+                                try {
+                                    URL obj = new URL(jenkinsUrl);
+                                    URLConnection conn = obj.openConnection();
+                                    String primaryHostName = conn.getHeaderField("X-Server");
+                                    String host = System.getenv("HOSTNAME");
+                                    if (primaryHostName != null && host != null) {
+                                        boolean isPrimary = host.equals(primaryHostName);
+                                        if (isPrimary) {
+                                            logger.println("This is the primary host - " + host);
+                                        } else {
+                                            logger.println(host + " is NOT the primary host, " + primaryHostName);
+                                        }
+                                    }
+                                } catch (IOException exception) {
+                                    logger.println("Failed to get Jenkins primary host: " + exception.getMessage());
+                                }
                             } else {
-                                listener.getLogger().println("Primary host not set");
+                                logger.println("Jenkins Url not set");
                             }
-
-                            if (host != null) {
-                                listener.getLogger().println("This host is " + host);
-                            } else {
-                                listener.getLogger().println("This host is not set");
-                            }
-                            listener.getLogger().format("%n" + Messages.GitHubBuildStatusNotification_CommitStatusSet() + "%n%n");
+                            logger.format("%n" + Messages.GitHubBuildStatusNotification_CommitStatusSet() + "%n%n");
                         }
                     }
                 } finally {
