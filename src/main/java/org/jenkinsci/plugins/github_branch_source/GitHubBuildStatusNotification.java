@@ -42,7 +42,11 @@ import hudson.scm.SCMRevisionState;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -52,6 +56,7 @@ import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMRevisionAction;
 import jenkins.scm.api.SCMSource;
+import jline.internal.Nullable;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
@@ -71,6 +76,10 @@ public class GitHubBuildStatusNotification {
     private static void createBuildCommitStatus(Run<?, ?> build, TaskListener listener) {
         SCMSource src = SCMSource.SourceByItem.findSource(build.getParent());
         SCMRevision revision = src != null ? SCMRevisionAction.getRevision(src, build) : null;
+        if (!isPrimary(listener)) {
+            listener.getLogger().println("Skipping commit status update from non-primary server!");
+            return;
+        }
         if (revision != null) { // only notify if we have a revision to notify
             try {
                 GitHub gitHub = lookUpGitHub(build.getParent());
@@ -174,6 +183,48 @@ public class GitHubBuildStatusNotification {
         return null;
     }
 
+    private static void info(@Nullable TaskListener listener, String message) {
+        if (listener != null) {
+            listener.getLogger().println("[isPrimary] " + message);
+        }
+        LOGGER.info("[isPrimary] " + message);
+    }
+
+    /**
+     /**
+     * Returns true if this is the primary Jenkins server.
+     * @param {PrintStream} logger - Logger
+     * @return true if server is primary, false otherwise.
+     */
+    private static boolean isPrimary(@Nullable TaskListener listener) {
+        String jenkinsUrl = System.getenv("JENKINS_URL");
+        String host = System.getenv("HOSTNAME");
+        if (jenkinsUrl == null || host == null) {
+            info(listener, "Either JENKINS_URL or HOSTNAME not defined.");
+            info(listener, "Assuming primary.");
+            return true;
+        }
+        try {
+            URL obj = new URL(jenkinsUrl);
+            URLConnection conn = obj.openConnection();
+            String primaryHostName = conn.getHeaderField("X-Server");
+            if (primaryHostName == null) {
+                info(listener, "Could not get server name from X-Server header.");
+                info(listener, "Assuming primary.");
+                return true;
+            }
+            boolean isPrimary = host.equals(primaryHostName);
+            if (!isPrimary) {
+                info(listener, "Not primary: This host is " + host + ", primary is " + primaryHostName);
+            }
+            return isPrimary;
+        } catch (IOException exception) {
+            info(listener, "Failed to get Jenkins primary host: " + exception.getMessage());
+            info(listener, "Assuming primary.");
+            return true;
+        }
+    }
+
     /**
      * With this listener one notifies to GitHub when a Job has been scheduled.
      * Sends: GHCommitState.PENDING
@@ -192,6 +243,9 @@ public class GitHubBuildStatusNotification {
             final long taskId = wi.getId();
             final Job<?,?> job = (Job) wi.task;
             final SCMSource source = SCMSource.SourceByItem.findSource(job);
+            if (!isPrimary(null)) {
+                return;
+            }
             if (!(source instanceof GitHubSCMSource)) {
                 return;
             }
