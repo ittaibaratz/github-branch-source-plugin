@@ -307,7 +307,7 @@ public class GitHubBuildStatusNotification {
                     if (Jenkins.get().getQueue().getItem(taskId) instanceof Queue.LeftItem) {
                       // we took too long and the item has left the queue, no longer valid to apply
                       // pending
-                      
+
                       // status. JobCheckOutListener is now responsible for setting the pending
                       // status.
                       return;
