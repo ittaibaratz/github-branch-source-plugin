@@ -23,10 +23,9 @@
  */
 package org.jenkinsci.plugins.github_branch_source;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSourceObserver;
 import jenkins.scm.api.trait.SCMNavigatorContext;
@@ -36,92 +35,87 @@ import jenkins.scm.api.trait.SCMNavigatorContext;
  *
  * @since 2.2.0
  */
-public class GitHubSCMNavigatorContext extends SCMNavigatorContext<GitHubSCMNavigatorContext, GitHubSCMNavigatorRequest> {
+public class GitHubSCMNavigatorContext
+    extends SCMNavigatorContext<GitHubSCMNavigatorContext, GitHubSCMNavigatorRequest> {
 
-    /**
-     * The team name of the repositories to navigate.
-     */
-    private String teamSlug = "";
+  /** The team name of the repositories to navigate. */
+  private String teamSlug = "";
 
-    /**
-     * The topic which the repositories must have.
-     */
-    private ArrayList<String> topics = new ArrayList<String>();
+  /** The topic which the repositories must have. */
+  private ArrayList<String> topics = new ArrayList<String>();
 
-    /**
-     * If true, archived repositories will be ignored.
-     */
-    private boolean excludeArchivedRepositories;
+  /** If true, archived repositories will be ignored. */
+  private boolean excludeArchivedRepositories;
 
-    /**
-     * If true, public repositories will be ignored.
-     */
-    private boolean excludePublicRepositories;
+  /** If true, public repositories will be ignored. */
+  private boolean excludePublicRepositories;
 
-    /**
-     * {@inheritDoc}
-     */
-    @NonNull
-    @Override
-    public GitHubSCMNavigatorRequest newRequest(@NonNull SCMNavigator navigator, @NonNull SCMSourceObserver observer) {
-        return new GitHubSCMNavigatorRequest(navigator, this, observer);
-    }
+  /** If true, forked repositories will be ignored. */
+  private boolean excludeForkedRepositories;
 
-    /**
-     * Sets the name of the team who's repositories will be navigated.
-     */
-    void setTeamSlug(String teamSlug) {
-        this.teamSlug = teamSlug;
-    }
+  /** {@inheritDoc} */
+  @NonNull
+  @Override
+  public GitHubSCMNavigatorRequest newRequest(
+      @NonNull SCMNavigator navigator, @NonNull SCMSourceObserver observer) {
+    return new GitHubSCMNavigatorRequest(navigator, this, observer);
+  }
 
-    /**
-     * Gets the name of the team who's repositories will be navigated.
-     * @return teamSlug
-     */
-    public String getTeamSlug() {
-        return teamSlug;
-    }
+  /** Sets the name of the team who's repositories will be navigated. */
+  void setTeamSlug(String teamSlug) {
+    this.teamSlug = teamSlug;
+  }
 
-    /**
-     * Sets the topics which the repositories must have.
-     */
-    public void setTopics(ArrayList<String> topics) {
-        this.topics = topics;
-    }
+  /**
+   * Gets the name of the team who's repositories will be navigated.
+   *
+   * @return teamSlug
+   */
+  public String getTeamSlug() {
+    return teamSlug;
+  }
 
-    /**
-     * Gets the topics which the repositories must have.
-     * @return topics
-     */
-    public List<String> getTopics() {
-        return topics;
-    }
+  /** Sets the topics which the repositories must have. */
+  public void setTopics(ArrayList<String> topics) {
+    this.topics = topics;
+  }
 
-    /**
-     * @return True if archived repositories should be ignored, false if they should be included.
-     */
-    public boolean isExcludeArchivedRepositories() {
-        return excludeArchivedRepositories;
-    }
+  /**
+   * Gets the topics which the repositories must have.
+   *
+   * @return topics
+   */
+  public List<String> getTopics() {
+    return topics;
+  }
 
-    /**
-     * @return True if public repositories should be ignored, false if they should be included.
-     */
-    public boolean isExcludePublicRepositories() {
-        return excludePublicRepositories;
-    }
+  /** @return True if archived repositories should be ignored, false if they should be included. */
+  public boolean isExcludeArchivedRepositories() {
+    return excludeArchivedRepositories;
+  }
 
-    /**
-     * @param excludeArchivedRepositories Set true to exclude archived repositories
-     */
-    public void setExcludeArchivedRepositories(boolean excludeArchivedRepositories) {
-        this.excludeArchivedRepositories = excludeArchivedRepositories;
-    }
+  /** @return True if public repositories should be ignored, false if they should be included. */
+  public boolean isExcludePublicRepositories() {
+    return excludePublicRepositories;
+  }
 
-    /**
-     * @param excludePublicRepositories Set true to exclude public repositories
-     */
-    public void setExcludePublicRepositories(boolean excludePublicRepositories) {
-        this.excludePublicRepositories = excludePublicRepositories;
-    }
+  /** @return True if forked repositories should be ignored, false if they should be included. */
+  public boolean isExcludeForkedRepositories() {
+    return excludeForkedRepositories;
+  }
+
+  /** @param excludeArchivedRepositories Set true to exclude archived repositories */
+  public void setExcludeArchivedRepositories(boolean excludeArchivedRepositories) {
+    this.excludeArchivedRepositories = excludeArchivedRepositories;
+  }
+
+  /** @param excludePublicRepositories Set true to exclude public repositories */
+  public void setExcludePublicRepositories(boolean excludePublicRepositories) {
+    this.excludePublicRepositories = excludePublicRepositories;
+  }
+
+  /** @param excludeForkedRepositories Set true to exclude archived repositories */
+  public void setExcludeForkedRepositories(boolean excludeForkedRepositories) {
+    this.excludeForkedRepositories = excludeForkedRepositories;
+  }
 }
